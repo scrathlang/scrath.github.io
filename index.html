@@ -1,0 +1,115 @@
+<html>
+<head>
+<meta charset = "UTF-8">
+<script src = "html2canvas.js"></script>
+<script src = "jquery.js"></script>
+<script src = "utils.js"></script>
+
+<style>
+	@font-face {
+		font-family: nunito;
+		src: url(nunito.ttf);
+	}
+	body{
+		height: 100vh;
+		width: 100%;
+		padding: 0px;
+		margin: 0;
+		font: 16px Arial;}
+	#Navigation{
+		height: 55px;
+		width: 100%;
+		line-height: 50px;
+		font-size: 125%;
+		background-color: #444444;
+		font-family: nunito;}
+	.NavigationButton{
+		display: inline-block;
+		height: 100%;
+		cursor: pointer;
+		padding-left: 30px;
+		padding-right: 30px;}
+	.NavigationButton:hover{
+		background-color: #666666;
+	}
+	a{
+		text-decoration: none;
+		color: white;
+	}
+	#Window{
+		width: 80%;
+		height: 600px;
+		margin: auto;
+		margin-top: 15px;}
+	.Half{
+		height: 100%;
+		display: inline-block;
+		vertical-align: top;
+		padding: 0px;
+		border: solid 1px #CCCCCC;}
+	#InputWrapper{
+		width: 30%;
+		padding: 3px;
+	}
+	#Output{
+		width: 68%;
+	}
+	textarea{
+		width: 99%;
+		height: 99%;
+		border: none;
+		resize: none;
+	}
+	button{
+		border: 1px solid transparent;
+		background-color: pink;
+		padding: 10px;
+		font-size: 16px;
+		display: inline-block;}
+	button:hover{
+		background-color: lightpink;
+		cursor: pointer;
+	}
+	#ButtonWrapper{
+		width: 300px;
+		margin: auto;
+		margin-top: 15px;
+		display: block;
+	}
+	#Save{
+		background-color: #FFC0CB;
+	}
+</style>
+</head>
+<body>
+<nav id = "Navigation">
+	<div class = "NavigationButton" onclick = "gotoLink('https://iconsheets.github.io/')"><a style = "color: pink" href = "#">Scrath</a></div>
+	<div class = "NavigationButton" onclick = "gotoLink('https://github.com/iconsheets/iconsheets.github.io/tree/master')"><a href = "#">Source Code</a></div>
+	<div class = "NavigationButton" style = "cursor: not-allowed"><a style = "color: #999999; cursor: not-allowed" href = "#">Tutorial and Documentation</a></div>
+</nav>
+<div id = "ButtonWrapper">
+	<button onclick = "go()" id = "Compile">Compile</button>
+	<button onclick = "console.log('unavailable :c')" id = "Save" disabled>Save as PNG</button>
+</div>
+<div id = "Window">
+	<div class = "Half" id = "InputWrapper"><textarea id = "Input"></textarea></div>
+	<div class = "Half" id = "Output"></div>
+</div>
+</body>
+
+<script src = "scripts.js"></script>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

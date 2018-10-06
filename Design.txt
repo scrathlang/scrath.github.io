@@ -1,0 +1,65 @@
+double(x, y)
+triple(x, y, z)
+sq(x)
+^(x)
+#(x)
+
+double(triple(#3+5, (x)/a, double(x, y)), s^3)
+
+
+double(x, y)	=
+double
+	parseUp(x)
+	parseDown(y)
+
+double
+	parseUp(triple(x, y, z))
+	parseDown(x)	
+	
+double
+	parseUp(triple(
+		parseUp(x),
+		parseMid(y),
+		parseDown(z)))
+	parseDown(x)
+	
+double
+	parseUp(triple(
+		parseUp(x),
+		parseMid(y),
+		parseDown(z)))
+	parseDown(x)
+	
+
+double	: 80 : 70
+	triple	80 : 50
+		x	60 : 20
+		y	25 : 20
+		z	80 : 10
+	x	 40 : 20
+	
+parseUp(x)
+	gets width and height
+	returns a box(w, h)
+
+
+
+double
+	triple
+		#
+			3+5
+		/
+			x
+			a
+		double
+			x
+			y
+	sequence
+		s
+		^
+			
+			
+
+			
+= 10 rows
+	
