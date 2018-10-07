@@ -12,6 +12,11 @@
 		window.location = str;
 	}
 	
+	function max(a, b){
+		if(a > b) return a;
+		return b;
+	}
+	
 	function isDigit(string){
 		if(stringContains("1234567890", string)) return true;
 		return false;}

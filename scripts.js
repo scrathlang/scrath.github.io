@@ -1,11 +1,6 @@
 
 debug = false;
 
-function max(a, b){
-	if(a > b) return a;
-	return b;
-}
-
 
 
 var Operators = ["//", "->", "<-", "==", "++", "^", "=", ",",
@@ -75,9 +70,6 @@ function isNativeMacro(string){
 		if(key == string) return string;}
 	return false;}
 
-function isMacro(string){
-	if(string == "Lambda") return ["Lambuuu", "Dredda"];		// TO DO
-	return false;}
 
 // takes the position of '(' and returns the position of ')'
 function findClosingParanthesisPosition(tokenArray, parPos){
@@ -237,11 +229,7 @@ function parseTokensToNative(tokenArray){
 				i = endPos;}
 			else{
 				let parsedFunction = callFunction(Functions[theFunction], []);
-				returnedTokenArray = returnedTokenArray.concat(parsedFunction);
-			}
-			}
-		else if(currentMacroAsTokenArray = isMacro(currentToken)){	// WORKS?
-			returnedTokenArray = returnedTokenArray.concat(currentMacroAsTokenArray);}
+				returnedTokenArray = returnedTokenArray.concat(parsedFunction);}}
 		// If finds 'function', parses the line to native and remembers the function
 		// It will not be put into the output
 		else if(currentToken == "function"){	// function name ( x , y )
@@ -259,8 +247,7 @@ function parseTokensToNative(tokenArray){
 				if(tokenArray[j] == "(") parStack++;
 				if(tokenArray[j] == ")") parStack--;
 				if(parStack < 0) break;
-				j++;
-			}
+				j++;}
 			/* TEST */
 			print("Ended j at " + j);
 			let parsedFunctionBody = parseTokensToNative(tokenArray.slice(endPos + 1, j));
@@ -269,15 +256,10 @@ function parseTokensToNative(tokenArray){
 			i = j;}
 		else if(theNativeMacro = isNativeMacro(currentToken)){
 			//console.log({theNativeMacro});
-			returnedTokenArray.push(NativeMacros[theNativeMacro]);
-		}
-		else{
-			returnedTokenArray.push(currentToken);
-		}
-	}
+			 returnedTokenArray.push(NativeMacros[theNativeMacro]);}
+		else returnedTokenArray.push(currentToken);} // End for
 	console.log("   Done parsing " + tokenArray);
-	return returnedTokenArray;
-}
+	return returnedTokenArray;}
 
 // Returns an array of tokenArray WITH NO new lines
 // Refactorable: this could be done from the start
@@ -309,9 +291,7 @@ function NativeFunction(name, type, fopen, fbetween, fclose){
 	if(this.type == FUNCTION){
 		this.leftParamWrapper = fopen;
 		this.between = fbetween;
-		this.rightParamWrapper = fclose;}
-	
-}
+		this.rightParamWrapper = fclose;}}
 new NativeFunction("over", OPERATOR, "{{", "} \\over {", "}}");
 new NativeFunction("\\frac", FUNCTION, "{", "", "}");
 new NativeFunction("\\sqrt", FUNCTION, "{", "", "}");
@@ -343,7 +323,6 @@ function isTokenOperator(string){
 // Parses a perfectly native tokenArray, returns a string
 // It's recursive af
 function formatMathBlock(tokenArray){
-	//console.log("Formatting: " + tokenArray);
 	let ret = "";
 	let firstWord = true;
 	for(let i = 0; i<tokenArray.length; i++){
@@ -359,17 +338,17 @@ function formatMathBlock(tokenArray){
 		else if(isTokenNumber(tokenArray[i-1]) || isTokenOperator(tokenArray[i-1]) || tokenArray[i-1] == "}^{"){
 			ret += token + " ";}
 		else if(firstWord){
+			firstWord = false;
 			ret += token + " ";}
 		else{
-			ret += " \\ \\ " + token;
+			ret += " \\ \\ " + token + " ";
 		}
 	}
 	return ret;}
 
+	
+	
 var hasMathJax = false;
-	
-
-	
 	
 function runMathJax(){
 	let mathJaxScript = createElement("script");
@@ -383,7 +362,7 @@ function go(){
 	//stopMathJax();
 	let out = get("Output");
 	out.innerHTML = "";
-	let code = get("Input").value;
+	let code = codeArea.getValue();
 	let codeAsTokens = splitCodeIntoTokens(code, Operators);
 	rememberFunctionNames(codeAsTokens);
 	let codeAsTokensReformatted = parseTokenArrayWithSpecialOperators(codeAsTokens);
@@ -394,17 +373,13 @@ function go(){
 	let nativeLines = splitTokenArrayByTwoOrMoreNewLines(parsedTokens);
 	for(let i = 0; i<nativeLines.length; i++){
 		//console.log(mathArrayToString(nativeLines[i]));
-		out.innerHTML += "$${" + formatMathBlock(nativeLines[i]) + "}$$<br><br>";
+		out.innerHTML += "$${" + formatMathBlock(nativeLines[i]) + "}$$<br>";
+		console.log(formatMathBlock(nativeLines[i]));
 		//console.log(formatMathBlock(nativeLines[i]));
 	}
 	if(hasMathJax) MathJax.Hub.Typeset();
 	else runMathJax();
 }
-	
-// Setting up operators should be done BEFORE parsing to native
-// Basically iterates through the tokens and if it finds such an operator, it changes its order and makes it a function
-
-
 
 
 
