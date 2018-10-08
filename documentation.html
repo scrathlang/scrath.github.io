@@ -1,0 +1,261 @@
+<html>
+<head>
+<meta charset = "UTF-8">
+<script src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<style>
+	@font-face {
+		font-family: nunito;
+		src: url(nunito.ttf);
+	}
+	body{
+		height: 100vh;
+		width: 100%;
+		padding: 0px;
+		margin: 0;
+		font: 16px Arial;
+		letter-spacing: 0.15px;}
+	#Navigation{
+		height: 55px;
+		width: 100%;
+		line-height: 50px;
+		font-size: 125%;
+		background-color: #444444;
+		font-family: nunito;}
+	.NavigationButton{
+		display: inline-block;
+		height: 100%;
+		cursor: pointer;
+		padding-left: 30px;
+		padding-right: 30px;}
+	.NavigationButton:hover{
+		background-color: #666666;}
+	a{
+		text-decoration: none;
+		color: white;}
+	#Documentation{
+		width: 75%;
+		margin-top: 15px;
+		border-left: solid #EEEEEE;
+		border-right: solid #EEEEEE;
+		margin: auto;
+		padding-left: 20px;}
+	h1, h2, h3{
+		font-family: nunito;
+	}
+	h3{
+		margin-top: 10px;
+		margin-left: 20px;
+	}
+	.Example{
+		width: 90%;
+		background-color: #F9F9F9;
+		margin: auto;
+		padding: 6px;
+		display: table;
+		-webkit-box-shadow: -3px -3px 3px -2px rgba(0,0,0,0.22);
+		-moz-box-shadow: -3px -3px 3px -2px rgba(0,0,0,0.22);
+		box-shadow: -3px -3px 3px -2px rgba(0,0,0,0.22);
+	}
+	.Code{
+		width: 90%;
+		margin-left: 20px;
+		background-color: white;
+		display: inline-block;
+		border-left: solid pink;
+		padding-left: 20px;
+		margin-bottom: 20px;
+	}
+	.CodeLeft{
+		font-family: Courier New, monospace;
+		width: 45%;
+		display: inline-block;
+		float: left;
+		padding-top: 20px;
+		padding-bottom: 20px;
+	}
+	.CodeRight{
+		width: 45%;
+		display: inline-block;
+		float: right;
+		padding-top: 20px;
+		padding-bottom: 20px;
+	}
+	.pink{
+		color: #e053b1;
+	}
+	.gray{
+		color: #DDDDDD;
+	}
+	table {
+		border-collapse: collapse;
+		width: 100%;
+	}
+
+	td, th {
+		border: 1px solid #ddd;
+		padding: 8px;
+	}
+
+	tr:nth-child(even){background-color: #f2f2f2;}
+
+	tr:hover {background-color: #ddd;}
+
+	th {
+		padding-top: 12px;
+		padding-bottom: 12px;
+		text-align: left;
+		background-color: #F164c2;
+		color: white;
+	}
+	
+</style>
+</head>
+<body>
+<nav id = "Navigation">
+	<div class = "NavigationButton" onclick = "gotoLink('https://scrathlang.github.io/')"><a style = "color: pink" href = "#">Scrath</a></div>
+	<div class = "NavigationButton" onclick = "gotoLink('https://github.com/iconsheets/iconsheets.github.io/tree/master')"><a href = "#">Source Code</a></div>
+	<div class = "NavigationButton" style = "cursor: not-allowed"><a style = "color: #999999; cursor: not-allowed" href = "#">Tutorial and Documentation</a></div>
+</nav>
+<div id = "Documentation">
+	<h1>Everything About Scrath</h1>
+	<h2>What is Scrath?</h2>
+	<p>Scrath stands for Script-to-Math. You write logical math equations and Scrath makes it look like real math.</p>
+	<p><i>Note:</i> you can find a table with all functions and macros at the end of the page, for quick reference</p>
+	<div class = "Example">
+		<h3>Simple Example</h3>
+		<div class = "Code">
+			<div class = "CodeLeft">x/y</div>
+			<div class = "CodeRight"><img src = "Documentation/xony.png"></div>
+		</div>
+	</div>
+	<p>To use Scrath, go to the Scrath home page.</p>
+	<h2>How it works</h2>
+	<p>Scrath takes your input Scrath code and transforms it into LaTeX code, which is then interpreted by MathJax into nice math formulas.</p>
+	<h2>Documentation and Tutorial</h2>
+	<p>A lot of the time, you can just write math as you intuitively would, and it Scrath will work its magic.</p>
+	<div class = "Example">
+		<h3>Example</h3>
+		<div class = "Code">
+			<div class = "CodeLeft">(a^b)/(lambda - 1)</div>
+			<div class = "CodeRight"><img src = "Documentation/ablambda.png"></div>
+		</div>
+	</div>
+	<p>Scrath separates your code words into 2 categories: functions and normal text.</p>
+	<h2>How do '(' and ')' work?</h2>
+	<p>When Scrath detects a <span class="pink">function</span> (such as 'pow', which is called like pow(x,2); it stands for 'x to the power of 2'), it replaces the whole 'pow(x,2)' structure with the actual value of the function, which is x^2, and it knows to transform it nicely into <img style = "width: 30px; margin-bottom: -3px;" src="Documentation/xpow2.png"></p>
+	<p>Otherwise, it treats parenthesis as normal text.</p>
+	<h2>Functions</h2>
+	<p>A function (or a macro) is something that allows you to more easily write Scrath code.</p>
+	<div class = "Example">
+		<h3>Declaring / Creating a Function</h3>
+		<div class = "Code">
+			<div class = "CodeLeft"><span class="pink">function</span> circleArea(r) pi r^2<br><br>This is how we write the area of a circle with radius 5:<br><br>circleArea(5)</div>
+			<div class = "CodeRight"><img style = "width: 100%;"src = "Documentation/circleareaexample.png"></div>
+		</div>
+		<p>In this example, 'r' is replaced with '5', wherever 'r' would be when the function is used</p>
+	</div>
+	<p><i>Hint: </i> You can give multiple words as a single parameter when using a function! For example, sqrt(I have a line above my head)</p>
+	<p>If a function has no parameters, you can just call it without parenthesis (you can still use '()' if you want)</p>
+	<div class = "Example">
+		<h3>Parameters Example</h3>
+		<div class = "Code">
+			<div class = "CodeLeft"><span class="pink">function</span> longSequence() 1+2+3+4+5+6+7+8+9<br><br>longSequence()<br><br>Is the same as<br><br>longSequence</div>
+			<div class = "CodeRight"><img src = "Documentation/longSequence.png"></div>
+		</div>
+	</div>
+	<p>You can call functions within functions or give them as parameters!</p>
+	<p><i>Note: </i> To go to a new line in the output math, you must use 2 new lines in Scrath (press enter twice).</p>
+	<div class = "Example">
+		<h3>Functions Are Awesome</h3>
+		<div class = "Code">
+			<div class = "CodeLeft"><span class="pink">function</span> sum(x,y) sqrt(x)+sqrt(y)<br><br><span class="pink">function</span> fraction(x,y) x/y<br><br>sum(fraction(x,y), z)</div>
+			<div class = "CodeRight"><img src = "Documentation/functionsAreAwesome.png"></div>
+		</div>
+	</div>
+	<h2>Functions with Any Number of Parameters</h2>
+	<p>You can create special functions that loop through the parameters and repeat the function for each parameter:</p>
+	<div class = "Example">
+		<h3>Normal Mode</h3>
+		<div class = "Code">
+			<div class = "CodeLeft"><span class="pink">function</span> anyParams(...) [...^2]<br><br>anyParams(c,3,5,63)</div>
+			<div class = "CodeRight"><img src = "Documentation/anyParams.png"></div>
+		</div>
+	</div>
+	<p>We can also use the 'between' mode to put something between every repetition:</p>
+	<div class = "Example">
+		<h3>With '<span class="pink">between</span>' Mode</h3>
+		<div class = "Code">
+			<div class = "CodeLeft"><span class="pink">function</span> anyParams(<span class="pink">between</span>, ...) [...^2]<br><br>anyParams(+,c,3,5,63)</div>
+			<div class = "CodeRight"><img src = "Documentation/anyParamsBetween.png"></div>
+		</div>
+	</div>
+	<h2>Quick Reference Guide</h2>
+	<p><i>Note:</i> 'Macro' means a function without parameters (explained eariler)</p>
+	<table>
+		<tr>
+			<th>Name</th>
+			<th>Use</th>
+			<th>Type</th>
+		</tr>
+		<tr>
+			<td><span class = "gray">left</span> ^ <span class = "gray">right</span></td>
+			<td>Returns 'left' to power 'right'</td>
+			<td>Operator Function (Special)</td>
+		</tr>
+		<tr>
+			<td><span class = "gray">left</span> / <span class = "gray">right</span></td>
+			<td>Returns 'left' over 'right' (fraction)</td>
+			<td>Operator Function (Special)</td>
+		</tr>
+		<tr>
+			<td>sqrt(x)</td>
+			<td>Returns 'square root of x'</td>
+			<td>Function</td>
+		</tr>
+		<tr>
+			<td>alpha, beta, gamma, etc</td>
+			<td>Returns the greek letter</td>
+			<td>Macro</td>
+		</tr>
+		<tr>
+			<td>yeah i got bored here</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	</table>
+</div>
+<br><br><br>
+<footer style = "background-color: #444444; height: 35px; padding-top: 10px; padding-bottom: 10px; margin-bottom: 0px;">
+	<p style = "text-align: center; color: gray;">\_=)_/</p>
+</footer>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

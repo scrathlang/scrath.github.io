@@ -18,7 +18,7 @@ CodeMirror.defineMode("scrath", function() {
     return obj;
   }
   var keywords = words(
-   `function frac sqrt power over 
+   `function between frac sqrt power over 
     alpha beta gamma delta epsilon
 	zeta eta theta kappa lambda mu nu xi pi rho
 	sigma tau phi chi psi omega`);

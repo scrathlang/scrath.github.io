@@ -22,7 +22,14 @@ class Function{
 		Functions[name] = this;
 		this.name = name;
 		this.variables = variables;
-		this.tokenArray = tokenArray;}
+		this.tokenArray = tokenArray;
+		if(variables[0] == "..."){
+			this.isLong = true;
+			this.hasBetween = false;}
+		else if(variables[1] == "..."){
+			this.isLong = true;
+			this.hasBetween = true;}
+		else this.isLong = false;}
 	variableIndex(variableName){
 		for(let i = 0; i<this.variables.length; i++){
 			let token = this.variables[i];
@@ -122,22 +129,50 @@ function splitByComma(tokenArray){
 // Returns a completely native tokenArray
 function callFunction(func, parameters){	// each parameter is a tokenArray
 	print("Called callFunction for function: " + func.name + "(" + parameters + ") " + func.tokenArray);
-	let returnedTokenArray = new Array();
-	for(let i = 0; i<func.tokenArray.length; i++){
-		print("callFunction: i at " + func.tokenArray[i]);
-		let token = func.tokenArray[i];
-		let varIndex = func.variableIndex(token);
-		if(varIndex == none){ returnedTokenArray.push(token); }
-		else{
-			print("  Found parameter: " + token + "    " + varIndex);
-			let parsedParameters = parseTokensToNative(parameters[varIndex]);
-			returnedTokenArray = returnedTokenArray.concat(parsedParameters);}}
-	print("  Returning " + returnedTokenArray);
-	return returnedTokenArray;}
-
-function parseTokenArrayWithSpecialOperators(tokenArray){
 	let ret = [];
-	let start = 0;
+	if(func.isLong){
+		if(func.hasBetween){
+			let between = parseTokensToNative(parameters[0]);
+			let firstParameter = parseTokensToNative(parameters[1]);
+			for(let j = 0; j<func.tokenArray.length; j++){
+				let token = func.tokenArray[j];
+				if(token == "..."){ ret = [...ret, ...firstParameter];}
+				else{ ret = [...ret, ...token];}}
+			for(let i = 2; i<parameters.length; i++){
+				ret = [...ret, ...between];
+				for(let j = 0; j<func.tokenArray.length; j++){
+					let token = func.tokenArray[j];
+					if(token == "..."){ ret = [...ret, ...parseTokensToNative(parameters[i])];}
+					else{ ret = [...ret, token];}}}
+			return ret;}
+		else{
+			for(let i = 0; i<parameters.length; i++){
+				for(let j = 0; j<func.tokenArray.length; j++){
+					let token = func.tokenArray[j];
+					if(token == "..."){ ret = [...ret, ...parseTokensToNative(parameters[i])];}
+					else{ ret = [...ret, token];}}}
+			console.log(ret);
+			return ret;}}
+	else{
+		for(let i = 0; i<func.tokenArray.length; i++){
+			print("callFunction: i at " + func.tokenArray[i]);
+			let token = func.tokenArray[i];
+			let varIndex = func.variableIndex(token);
+			if(varIndex == none){ ret.push(token); }
+			else{
+				print("  Found parameter: " + token + "    " + varIndex);
+				let parsedParameters = parseTokensToNative(parameters[varIndex]);
+				ret = ret.concat(parsedParameters);}}}
+	print("  Returning " + ret);
+	return ret;}
+
+// Iterates through the given tokenArray (ta)
+// When it finds a '/', does its magic and resets the for loop
+// Then it looks for '/' again from the beginning
+// OPTIMIZATION: Remember the last position of '/' and start from there with the next for loop.
+function parseTokenArrayWithSpecialOperators(ta){
+	let tokenArray = ta.slice();
+	let ret = [];
 	for(let i = 0; i<tokenArray.length; i++){
 		let token = tokenArray[i];
 		if(token == "/" || token == "^"){
@@ -150,7 +185,6 @@ function parseTokenArrayWithSpecialOperators(tokenArray){
 				let parOpenPos = findOpeningParanthesisPosition(tokenArray, i-1);
 				let par1start = parOpenPos;
 				if(isUserFunction(tokenArray[par1start - 1])){
-					//console.log("  It's a user function.");
 					isUFunction = true;
 					par1start --;
 					blockBefore = tokenArray.slice(par1start, i);}
@@ -158,11 +192,8 @@ function parseTokenArrayWithSpecialOperators(tokenArray){
 					par1start ++;
 					blockBefore = tokenArray.slice(par1start, i - 1);}
 				blockBefore = parseTokenArrayWithSpecialOperators(blockBefore);
-					// blockBefore e bun
 				if(isUFunction) retPartEnd = par1start;
-				else retPartEnd = parOpenPos;
-				//console.log({retPartEnd})
-				}
+				else retPartEnd = parOpenPos;}
 			else{
 				blockBefore = tokenArray[i-1];
 				retPartEnd = i-1;}
@@ -173,38 +204,40 @@ function parseTokenArrayWithSpecialOperators(tokenArray){
 				retNextStart = par2end + 1;}
 			else{
 				if(isUserFunction(tokenArray[i+1])){
-					//console.log("Found user function: " + tokenArray[i+1]);
 					let par2end = findClosingParanthesisPosition(tokenArray, i+2);
 					blockAfter = tokenArray.slice(i+1, par2end + 1);
 					blockAfter = parseTokenArrayWithSpecialOperators(blockAfter);
-					//console.log({blockAfter});
 					retNextStart = par2end + 1;}
 				else{
-					//console.log(tokenArray[i+1]);
 					blockAfter = tokenArray[i+1];
 					retNextStart = i+2;}}
-			ret = ret.concat(tokenArray.slice(start, retPartEnd));
+			ret = ret.concat(tokenArray.slice(0, retPartEnd));
 			if(theMiddleFunction == "/"){
-				ret = ret.concat(["\\frac", "("], blockBefore, [","], blockAfter, [")"]);}
+				ret = ret.concat(["over", "("], blockBefore, [","], blockAfter, [")"]);
+				ret = ret.concat(tokenArray.slice(retNextStart, tokenArray.length));
+				print("  " + mathArrayToString(ret));}
 			else if(theMiddleFunction == "^"){
-				//console.log("HEY!!");
 				ret = ret.concat(["{", blockBefore, "}^{", blockAfter, "}"]);
-				//console.log({rettt : ret});
+				ret = ret.concat(tokenArray.slice(retNextStart, tokenArray.length));
 			}
-			i = retNextStart;
-			start = retNextStart;
+			//i = retNextStart;
+			//start = retNextStart;
+			tokenArray = ret;
+			ret = [];
+			i = -1;
 		}
 	}
-	if(start < tokenArray.length){
-		ret = ret.concat(tokenArray.slice(start, tokenArray.length));}
-	return ret;
+	//if(start < tokenArray.length){
+		//ret = ret.concat(tokenArray.slice(start, tokenArray.length));}
+	//return ret;
+	return tokenArray;
 }
 		
 		
 function rememberFunctionNames(tokenArray){		// Iterates and reads and remembers function names
 	for(let i = 0; i<tokenArray.length; i++){
 		if(tokenArray[i] == "function"){
-			Functions[tokenArray[i+1]] = "not set";
+			Functions[tokenArray[i+1]] = "exists!";
 		}
 	}
 }
@@ -218,7 +251,7 @@ function parseTokensToNative(tokenArray){
 	for(let i = 0; i<tokenArray.length; i++){
 		let currentToken = tokenArray[i];
 		if(theFunction = isUserFunction(currentToken)){		// Refactorable with only booleans
-			console.log("Called function: " + theFunction);
+			print("Called function: " + theFunction);
 			if(tokenArray[i+1] == "("){
 				let startPos = i + 2;		// func ( p1 ...
 				let endPos = findClosingParanthesisPosition(tokenArray, i + 1);	// same as paranthesis
@@ -233,7 +266,7 @@ function parseTokensToNative(tokenArray){
 		// If finds 'function', parses the line to native and remembers the function
 		// It will not be put into the output
 		else if(currentToken == "function"){	// function name ( x , y )
-			console.log("Found function: " + tokenArray[i+1]);
+			print("Found function: " + tokenArray[i+1]);
 			let functionName = tokenArray[i + 1];
 			let endPos = findClosingParanthesisPosition(tokenArray, i + 2);
 			let parameterList = arrayArrayToArray(splitByComma(tokenArray.slice(i + 3, endPos)));
@@ -243,7 +276,7 @@ function parseTokensToNative(tokenArray){
 			/* TEST */
 			let parStack = 0;
 			while(tokenArray[j] != "\n" && j < tokenArray.length){
-				console.log("  Reached " + tokenArray[j]);
+				print("  Reached " + tokenArray[j]);
 				if(tokenArray[j] == "(") parStack++;
 				if(tokenArray[j] == ")") parStack--;
 				if(parStack < 0) break;
@@ -255,10 +288,10 @@ function parseTokensToNative(tokenArray){
 			print("Added new function: " + functionName + " " + parameterList + " : " + parsedFunctionBody);
 			i = j;}
 		else if(theNativeMacro = isNativeMacro(currentToken)){
-			//console.log({theNativeMacro});
+			//print({theNativeMacro});
 			 returnedTokenArray.push(NativeMacros[theNativeMacro]);}
 		else returnedTokenArray.push(currentToken);} // End for
-	console.log("   Done parsing " + tokenArray);
+	print("Done parsing " + returnedTokenArray);
 	return returnedTokenArray;}
 
 // Returns an array of tokenArray WITH NO new lines
@@ -366,16 +399,16 @@ function go(){
 	let codeAsTokens = splitCodeIntoTokens(code, Operators);
 	rememberFunctionNames(codeAsTokens);
 	let codeAsTokensReformatted = parseTokenArrayWithSpecialOperators(codeAsTokens);
-	Functions = {};
+	//Functions = {};
 	//out.innerHTML += "Code as tokens reformatted: " + mathArrayToString(codeAsTokensReformatted);
 	let parsedTokens = parseTokensToNative(codeAsTokensReformatted);
 	//out.innerHTML += "<br><br>Parsed tokens (to native): " + mathArrayToString(parsedTokens);
 	let nativeLines = splitTokenArrayByTwoOrMoreNewLines(parsedTokens);
 	for(let i = 0; i<nativeLines.length; i++){
-		//console.log(mathArrayToString(nativeLines[i]));
+		//print(mathArrayToString(nativeLines[i]));
 		out.innerHTML += "$${" + formatMathBlock(nativeLines[i]) + "}$$<br>";
-		console.log(formatMathBlock(nativeLines[i]));
-		//console.log(formatMathBlock(nativeLines[i]));
+		print(formatMathBlock(nativeLines[i]));
+		//print(formatMathBlock(nativeLines[i]));
 	}
 	if(hasMathJax) MathJax.Hub.Typeset();
 	else runMathJax();
