@@ -69,7 +69,31 @@ NativeMacros = {
 	'phi'      : '\\phi',    
 	'chi'      : '\\chi',    
 	'psi'      : '\\psi',    
-	'omega'    : '\\omega'  
+	'omega'    : '\\omega',
+	'Alpha'    : '\\Alpha',
+	'Beta'     : '\\Beta', 
+	'Gamma'    : '\\Gamma',
+	'Delta'    : '\\Delta', 
+	'Epsilon'  : '\\Epsilon',
+	'Zeta'     : '\\Zeta', 
+	'Eta'      : '\\Eta',  
+	'Theta'    : '\\Theta',
+	'Kappa'    : '\\Kappa', 
+	'Lambda'   : '\\Lambda', 
+	'Mu'       : '\\Mu',
+	'Nu'       : '\\Nu',    
+	'Xi'       : '\\Xi',    
+	'Pi'       : '\\Pi',    
+	'Rho'      : '\\Rho',    
+	'Sigma'    : '\\Sigma',
+	'Tau'      : '\\Tau',    
+	'Phi'      : '\\Phi',    
+	'Chi'      : '\\Chi',    
+	'Psi'      : '\\Psi',    
+	'Omega'    : '\\Omega',
+	'->'	   : '\to'
+	
+	
 }
 function isNativeMacro(string){
 	for (var key in NativeMacros) {
