@@ -5,7 +5,7 @@ debug = false;
 
 var Operators = ['===', '<=>', '<->', "//", "->", "<-", "==", "++", "^", "=", ",",
 				 "/", "+", "-", ";", "(", ")", "\n", "[",
-				 "]", "{", "}"];
+				 "]", "{", "}", "#"];
 function splitCodeIntoTokens(code, operators){
 		var codeParts = splitBySpacesAndTabs(code);
 		var tokenArray = [];
@@ -40,6 +40,7 @@ new Function("utest", ["x", "y"], ["x", "+", "y"]);
 new Function("over", ["x", "y"], ["\\frac", "(", "x", ",", "y", ")"]);
 new Function("power", ["x", "y"], ["\\frac", "(", "x", ",", "y", ")"]);
 new Function("sqrt", ["x"], ["\\sqrt", "(", "x", ")"]);
+new Function("3rows", ["m", "b", "t"], ["rows", "(", "t", ",", "m", ",", "b", ")"]);
 		
 function isUserFunction(string){
 	for (var key in Functions) {
@@ -107,7 +108,7 @@ NativeMacros = {
 	'any'		: '\\forall',
 	'Inf'		: '\\infty', 'inf' : '\\infty', 'Infinity' : '\\infty', 'infinity' : '\\infty',
 	'not'		: '\\neg',
-	'sum'		: '\\sum',
+	'sum'		: '\\sum',	'Sum' : '\\Large{\\sum}\\normalsize',
 	'prod'		: '\\prod', 'Product' : '\\prod',
 	'integral'	: '\\int'
 
@@ -216,7 +217,7 @@ function parseTokenArrayWithSpecialOperators(ta){
 	let ret = [];
 	for(let i = 0; i<tokenArray.length; i++){
 		let token = tokenArray[i];
-		if(token == "/" || token == "^"){
+		if(token == "/" || token == "^" || token == "#"){
 			let blockBefore, blockAfter;
 			let retPartEnd;
 			let retNextStart;
@@ -232,7 +233,8 @@ function parseTokenArrayWithSpecialOperators(ta){
 				else{
 					par1start ++;
 					blockBefore = tokenArray.slice(par1start, i - 1);}
-				blockBefore = parseTokenArrayWithSpecialOperators(blockBefore);
+				//blockBefore = parseTokenArrayWithSpecialOperators(blockBefore);
+				// Redundant? I believe so
 				if(isUFunction) retPartEnd = par1start;
 				else retPartEnd = parOpenPos;}
 			else{
@@ -241,13 +243,13 @@ function parseTokenArrayWithSpecialOperators(ta){
 			if(tokenArray[i+1] == "("){
 				let par2end = findClosingParanthesisPosition(tokenArray, i+1);
 				blockAfter = tokenArray.slice(i+2, par2end);
-				blockAfter = parseTokenArrayWithSpecialOperators(blockAfter);
+				//blockAfter = parseTokenArrayWithSpecialOperators(blockAfter);
 				retNextStart = par2end + 1;}
 			else{
 				if(isUserFunction(tokenArray[i+1])){
 					let par2end = findClosingParanthesisPosition(tokenArray, i+2);
 					blockAfter = tokenArray.slice(i+1, par2end + 1);
-					blockAfter = parseTokenArrayWithSpecialOperators(blockAfter);
+					//blockAfter = parseTokenArrayWithSpecialOperators(blockAfter);
 					retNextStart = par2end + 1;}
 				else{
 					blockAfter = tokenArray[i+1];
@@ -255,22 +257,20 @@ function parseTokenArrayWithSpecialOperators(ta){
 			ret = ret.concat(tokenArray.slice(0, retPartEnd));
 			if(theMiddleFunction == "/"){
 				ret = ret.concat(["over", "("], blockBefore, [","], blockAfter, [")"]);
-				ret = ret.concat(tokenArray.slice(retNextStart, tokenArray.length));
-				print("  " + mathArrayToString(ret));}
+				ret = ret.concat(tokenArray.slice(retNextStart, tokenArray.length));}
 			else if(theMiddleFunction == "^"){
-				ret = ret.concat(["{", blockBefore, "}^{", blockAfter, "}"]);
+				console.log(blockAfter);
+				ret = ret.concat(["{"], blockBefore, ["}^{"], blockAfter, ["}"]);
+				ret = ret.concat(tokenArray.slice(retNextStart, tokenArray.length));}
+			else if(theMiddleFunction == "#"){
+				ret = ret.concat(["{"], blockBefore, ["}_{"], blockAfter, ["}"]);
 				ret = ret.concat(tokenArray.slice(retNextStart, tokenArray.length));
 			}
-			//i = retNextStart;
-			//start = retNextStart;
 			tokenArray = ret;
 			ret = [];
 			i = -1;
 		}
 	}
-	//if(start < tokenArray.length){
-		//ret = ret.concat(tokenArray.slice(start, tokenArray.length));}
-	//return ret;
 	return tokenArray;
 }
 		
@@ -278,7 +278,7 @@ function parseTokenArrayWithSpecialOperators(ta){
 function rememberFunctionNames(tokenArray){		// Iterates and reads and remembers function names
 	for(let i = 0; i<tokenArray.length; i++){
 		if(tokenArray[i] == "function"){
-			Functions[tokenArray[i+1]] = "exists!";
+			Functions[tokenArray[i+1]] = true;
 		}
 	}
 }
@@ -352,23 +352,29 @@ function splitTokenArrayByTwoOrMoreNewLines(tokenArray){	// Splits by 2 or more 
 	return arrayArray;}
 
 NativeFunctions = {};
-const FUNCTION = 1;
-const OPERATOR = 2;
+const FUNCTION  = 1;
+//const OPERATOR  = 2;	Redundant?
+const ROWS		= 3;
 function NativeFunction(name, type, fopen, fbetween, fclose){
 	NativeFunctions[name] = this;
 	this.name = name;
 	this.type = type;
-	if(this.type == OPERATOR){
+	/*if(this.type == OPERATOR){
 		this.open = fopen;
 		this.between = "\\over";
-		this.close = fclose;}
-	if(this.type == FUNCTION){
+		this.close = fclose;}*/ // Redundant?
+	if(this.type >= FUNCTION){
 		this.leftParamWrapper = fopen;
 		this.between = fbetween;
-		this.rightParamWrapper = fclose;}}
-new NativeFunction("over", OPERATOR, "{{", "} \\over {", "}}");
+		this.rightParamWrapper = fclose;}
+	if(this.type == ROWS){
+		// Handled in callNativeFunction
+	}
+		}
+//new NativeFunction("over", OPERATOR, "{{", "} \\over {", "}}");	Redundant?
 new NativeFunction("\\frac", FUNCTION, "{", "", "}");
 new NativeFunction("\\sqrt", FUNCTION, "{", "", "}");
+new NativeFunction("rows", ROWS);
 
 function isNativeFunction(string){
 	for (var key in NativeFunctions) {
@@ -378,15 +384,23 @@ function isNativeFunction(string){
 
 function callNativeFunction(nf, pars){
 	let ret = "";
-	if(nf.type == OPERATOR){
+	/*if(nf.type == OPERATOR){
 		ret = nf.open + formatMathBlock(pars[0]);
 		for(let i = 1; i<pars.length; i++){
 			ret += nf.between + formatMathBlock(pars[i]);}
-		ret += nf.close;}
+		ret += nf.close;}*/
 	if(nf.type == FUNCTION){
 		ret = nf.name;
 		for(let i = 0;i<pars.length; i++){
 			ret += nf.leftParamWrapper + formatMathBlock(pars[i]) + nf.rightParamWrapper;}}
+	if(nf.type == ROWS){
+		ret = "\\begin{matrix} ";
+		for(let i = 0; i<pars.length; i++){
+			ret += formatMathBlock(pars[i]) + " ";
+			if(i != pars.length - 1){
+				ret += " \\\\ ";}}
+		ret += "\\end{matrix} ";
+	}
 	return ret;}
 
 function isTokenOperator(string){
