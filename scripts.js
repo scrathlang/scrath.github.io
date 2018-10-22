@@ -3,7 +3,7 @@ debug = false;
 
 
 
-var Operators = ['===', '<=>', '<->', "//", "->", "<-", "==", "++", "^", "=", ",",
+var Operators = [',,', '|', ';;', '===', '<=>', '<->', "//", "->", "<-", "==", "++", "^", "=", ",",
 				 "/", "+", "-", ";", "(", ")", "\n", "[",
 				 "]", "{", "}", "#"];
 function splitCodeIntoTokens(code, operators){
@@ -110,7 +110,10 @@ NativeMacros = {
 	'not'		: '\\neg',
 	'sum'		: '\\sum',	'Sum' : '\\Large{\\sum}\\normalsize',
 	'prod'		: '\\prod', 'Product' : '\\prod',
-	'integral'	: '\\int'
+	'integral'	: '\\int',
+	';;'		: ' \\ \\ ',
+	'|'			: ')',
+	',,'		: ','
 
 }
 function isNativeMacro(string){
@@ -129,7 +132,8 @@ function findClosingParanthesisPosition(tokenArray, parPos){
 			parStack++;}
 		else if(tokenArray[i] == ")"){
 			if(parStack == 0) return i;
-			else parStack--;}}}
+			else parStack--;}}
+	return false;}
 
 function findOpeningParanthesisPosition(tokenArray, parPos){
 	let parStack = 0;
@@ -172,8 +176,8 @@ function splitByComma(tokenArray){
 function callFunction(func, parameters){	// each parameter is a tokenArray
 	print("Called callFunction for function: " + func.name + "(" + parameters + ") " + func.tokenArray);
 	let ret = [];
-	if(func.isLong){
-		if(func.hasBetween){
+	if(func.isLong){	// func(...)
+		if(func.hasBetween){	// func(between, ...)
 			let between = parseTokensToNative(parameters[0]);
 			let firstParameter = parseTokensToNative(parameters[1]);
 			for(let j = 0; j<func.tokenArray.length; j++){
@@ -195,7 +199,7 @@ function callFunction(func, parameters){	// each parameter is a tokenArray
 					else{ ret = [...ret, token];}}}
 			console.log(ret);
 			return ret;}}
-	else{
+	else{			// func(x, y)
 		for(let i = 0; i<func.tokenArray.length; i++){
 			print("callFunction: i at " + func.tokenArray[i]);
 			let token = func.tokenArray[i];
@@ -221,7 +225,7 @@ function parseTokenArrayWithSpecialOperators(ta){
 			let blockBefore, blockAfter;
 			let retPartEnd;
 			let retNextStart;
-			let isUFunction = false;
+			let isUFunction = false;																			
 			let theMiddleFunction = token;
 			if(tokenArray[i-1] == ")"){
 				let parOpenPos = findOpeningParanthesisPosition(tokenArray, i-1);
@@ -233,8 +237,6 @@ function parseTokenArrayWithSpecialOperators(ta){
 				else{
 					par1start ++;
 					blockBefore = tokenArray.slice(par1start, i - 1);}
-				//blockBefore = parseTokenArrayWithSpecialOperators(blockBefore);
-				// Redundant? I believe so
 				if(isUFunction) retPartEnd = par1start;
 				else retPartEnd = parOpenPos;}
 			else{
@@ -243,13 +245,11 @@ function parseTokenArrayWithSpecialOperators(ta){
 			if(tokenArray[i+1] == "("){
 				let par2end = findClosingParanthesisPosition(tokenArray, i+1);
 				blockAfter = tokenArray.slice(i+2, par2end);
-				//blockAfter = parseTokenArrayWithSpecialOperators(blockAfter);
 				retNextStart = par2end + 1;}
 			else{
 				if(isUserFunction(tokenArray[i+1])){
 					let par2end = findClosingParanthesisPosition(tokenArray, i+2);
 					blockAfter = tokenArray.slice(i+1, par2end + 1);
-					//blockAfter = parseTokenArrayWithSpecialOperators(blockAfter);
 					retNextStart = par2end + 1;}
 				else{
 					blockAfter = tokenArray[i+1];
@@ -277,14 +277,14 @@ function parseTokenArrayWithSpecialOperators(ta){
 		
 function rememberFunctionNames(tokenArray){		// Iterates and reads and remembers function names
 	for(let i = 0; i<tokenArray.length; i++){
-		if(tokenArray[i] == "function"){
+		if(tokenArray[i] == 'function' || tokenArray[i] == 'func' || tokenArray[i] == 'macro' || tokenArray[i] == 'def'){
 			Functions[tokenArray[i+1]] = true;
 		}
 	}
 }
 		
 // Takes in a tokenArray, and returns the perfectly native tokenArray.
-// (Perfectly native means it only contains native functions, all user function
+// (Perfectly native means it only contains native functions, all user functions
 //  that it finds are inline'd using their function definitions)
 function parseTokensToNative(tokenArray){
 	print("Called parseTokensToNative for " + tokenArray);
@@ -306,31 +306,21 @@ function parseTokensToNative(tokenArray){
 				returnedTokenArray = returnedTokenArray.concat(parsedFunction);}}
 		// If finds 'function', parses the line to native and remembers the function
 		// It will not be put into the output
-		else if(currentToken == "function"){	// function name ( x , y )
+		else if(currentToken == 'function' || currentToken == 'macro' || currentToken == 'func' || currentToken == 'def'){	// function name ( x , y )
 			print("Found function: " + tokenArray[i+1]);
 			let functionName = tokenArray[i + 1];
-			let endPos = findClosingParanthesisPosition(tokenArray, i + 2);
-			let parameterList = arrayArrayToArray(splitByComma(tokenArray.slice(i + 3, endPos)));
-			let j = i;	// can optimize by making it equal to endPos or sth
-			print("Started j at " + j);
-			//while(tokenArray[j] != "\n" && j < tokenArray.length) j++;
-			/* TEST */
-			let parStack = 0;
+			let endPos = i+1;
+			let parameterList = [];
+			if(tokenArray[i+2] == '('){
+				endPos = findClosingParanthesisPosition(tokenArray, i + 2);
+				parameterList = arrayArrayToArray(splitByComma(tokenArray.slice(i + 3, endPos)));
+			}
+			let j = endPos;
 			while(tokenArray[j] != "\n" && j < tokenArray.length){
-				print("  Reached " + tokenArray[j]);
-				if(tokenArray[j] == "(") parStack++;
-				if(tokenArray[j] == ")") parStack--;
-				if(parStack < 0) break;
 				j++;}
-			/* TEST */
-			print("Ended j at " + j);
 			let parsedFunctionBody = parseTokensToNative(tokenArray.slice(endPos + 1, j));
 			new Function(functionName, parameterList, parsedFunctionBody);
-			print("Added new function: " + functionName + " " + parameterList + " : " + parsedFunctionBody);
 			i = j;}
-		else if(theNativeMacro = isNativeMacro(currentToken)){
-			//print({theNativeMacro});
-			 returnedTokenArray.push(NativeMacros[theNativeMacro]);}
 		else returnedTokenArray.push(currentToken);} // End for
 	print("Done parsing " + returnedTokenArray);
 	return returnedTokenArray;}
@@ -353,16 +343,11 @@ function splitTokenArrayByTwoOrMoreNewLines(tokenArray){	// Splits by 2 or more 
 
 NativeFunctions = {};
 const FUNCTION  = 1;
-//const OPERATOR  = 2;	Redundant?
-const ROWS		= 3;
+const ROWS		= 2;	// Special type of native function, creates rows
 function NativeFunction(name, type, fopen, fbetween, fclose){
 	NativeFunctions[name] = this;
 	this.name = name;
 	this.type = type;
-	/*if(this.type == OPERATOR){
-		this.open = fopen;
-		this.between = "\\over";
-		this.close = fclose;}*/ // Redundant?
 	if(this.type >= FUNCTION){
 		this.leftParamWrapper = fopen;
 		this.between = fbetween;
@@ -371,7 +356,6 @@ function NativeFunction(name, type, fopen, fbetween, fclose){
 		// Handled in callNativeFunction
 	}
 		}
-//new NativeFunction("over", OPERATOR, "{{", "} \\over {", "}}");	Redundant?
 new NativeFunction("\\frac", FUNCTION, "{", "", "}");
 new NativeFunction("\\sqrt", FUNCTION, "{", "", "}");
 new NativeFunction("rows", ROWS);
@@ -384,16 +368,11 @@ function isNativeFunction(string){
 
 function callNativeFunction(nf, pars){
 	let ret = "";
-	/*if(nf.type == OPERATOR){
-		ret = nf.open + formatMathBlock(pars[0]);
-		for(let i = 1; i<pars.length; i++){
-			ret += nf.between + formatMathBlock(pars[i]);}
-		ret += nf.close;}*/
 	if(nf.type == FUNCTION){
 		ret = nf.name;
 		for(let i = 0;i<pars.length; i++){
 			ret += nf.leftParamWrapper + formatMathBlock(pars[i]) + nf.rightParamWrapper;}}
-	if(nf.type == ROWS){
+	else if(nf.type == ROWS){
 		ret = "\\begin{matrix} ";
 		for(let i = 0; i<pars.length; i++){
 			ret += formatMathBlock(pars[i]) + " ";
@@ -415,58 +394,50 @@ function formatMathBlock(tokenArray){
 	let firstWord = true;
 	for(let i = 0; i<tokenArray.length; i++){
 		let token = tokenArray[i];
-		if(isNativeFunction(token)){
+		let wordIsEscaped = false;
+		if(token[0] == '~'){
+			token = token.substring(1, token.length) + ' ';
+			wordIsEscaped = true;
+		}
+		if(!wordIsEscaped && isNativeFunction(token)){
 			let start = i + 1;
 			let end = findClosingParanthesisPosition(tokenArray, start);
 			let parameters = splitByComma(tokenArray.slice(start + 1, end));
 			ret += callNativeFunction(NativeFunctions[token], parameters);
 			i = end;}
-		else if(isTokenNumber(token) || isTokenOperator(token) || token[0] == "\\" || token == "}^{"){
+		else if(!wordIsEscaped && isNativeMacro(token)){
+			ret += NativeMacros[token] + " ";}
+		else if(!wordIsEscaped && isTokenNumber(token) || isTokenOperator(token) || token[0] == "\\" || token == "}^{"){
 			ret += token + " ";}
-		else if(isTokenNumber(tokenArray[i-1]) || isTokenOperator(tokenArray[i-1]) || tokenArray[i-1] == "}^{"){
+		else if((i>0 && tokenArray[i-1][0] != '~' && isNativeMacro(tokenArray[i-1])) || isTokenNumber(tokenArray[i-1]) || isTokenOperator(tokenArray[i-1]) || tokenArray[i-1] == "}^{"){
 			ret += token + " ";}
 		else if(firstWord){
-			firstWord = false;
 			ret += token + " ";}
 		else{
 			ret += " \\ \\ " + token + " ";
+		}
+		if(firstWord){
+			firstWord = false;
 		}
 	}
 	return ret;}
 
 	
 	
-var hasMathJax = false;
-	
-function runMathJax(){
-	let mathJaxScript = createElement("script");
-	mathJaxScript.setAttribute("id", "MathJaxScript");
-	mathJaxScript.src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML";
-	mathJaxScript.type = "text/javascript";
-	document.head.appendChild(mathJaxScript);
-	hasMathJax = true;}
-	
 function go(){
-	//stopMathJax();
 	let out = get("Output");
 	out.innerHTML = "";
 	let code = codeArea.getValue();
 	let codeAsTokens = splitCodeIntoTokens(code, Operators);
 	rememberFunctionNames(codeAsTokens);
 	let codeAsTokensReformatted = parseTokenArrayWithSpecialOperators(codeAsTokens);
-	//Functions = {};
-	//out.innerHTML += "Code as tokens reformatted: " + mathArrayToString(codeAsTokensReformatted);
 	let parsedTokens = parseTokensToNative(codeAsTokensReformatted);
-	//out.innerHTML += "<br><br>Parsed tokens (to native): " + mathArrayToString(parsedTokens);
 	let nativeLines = splitTokenArrayByTwoOrMoreNewLines(parsedTokens);
 	for(let i = 0; i<nativeLines.length; i++){
-		//print(mathArrayToString(nativeLines[i]));
-		out.innerHTML += "$${" + formatMathBlock(nativeLines[i]) + "}$$<br>";
+		out.innerHTML += "$${" + formatMathBlock(nativeLines[i]) + "}$$";
 		print(formatMathBlock(nativeLines[i]));
-		//print(formatMathBlock(nativeLines[i]));
 	}
-	if(hasMathJax) MathJax.Hub.Typeset();
-	else runMathJax();
+	MathJax.Hub.Typeset();
 }
 
 
