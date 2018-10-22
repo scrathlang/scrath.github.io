@@ -437,6 +437,7 @@ function go(){
 		out.innerHTML += "$${" + formatMathBlock(nativeLines[i]) + "}$$";
 		print(formatMathBlock(nativeLines[i]));
 	}
+	
 	MathJax.Hub.Typeset();
 }
 

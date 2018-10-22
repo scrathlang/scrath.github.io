@@ -6,6 +6,11 @@
 <link rel="stylesheet" href="codemirror/theme/neo.css">
 <script src="codemirror/mode/scrath/scrath.js"></script>
 <script id = "MathJaxScript" src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script>
+MathJax.Hub.Config({
+	jax: ["input/TeX", "output/HTML-CSS"]
+});
+</script>
 <script src = "html2canvas.js"></script>
 <script src = "jquery.js"></script>
 <script src = "utils.js"></script>
@@ -105,6 +110,7 @@
 	<div class = "Half" id = "Output"></div>
 </div>
 <script>
+
 var codeArea = CodeMirror(document.getElementById("InputWrapper"), {
 	value: "function pow2(x) x^2\n\npow2(4) = 16",
 	mode:  "scrath",
