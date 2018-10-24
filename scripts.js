@@ -307,7 +307,7 @@ function parseTokensToNative(tokenArray){
 		// If finds 'function', parses the line to native and remembers the function
 		// It will not be put into the output
 		else if(currentToken == 'function' || currentToken == 'macro' || currentToken == 'func' || currentToken == 'def'){	// function name ( x , y )
-			print("Found function: " + tokenArray[i+1]);
+			console.log("Found function: " + tokenArray[i+1]);
 			let functionName = tokenArray[i + 1];
 			let endPos = i+1;
 			let parameterList = [];
@@ -424,22 +424,7 @@ function formatMathBlock(tokenArray){
 
 	
 	
-function go(){
-	let out = get("Output");
-	out.innerHTML = "";
-	let code = codeArea.getValue();
-	let codeAsTokens = splitCodeIntoTokens(code, Operators);
-	rememberFunctionNames(codeAsTokens);
-	let codeAsTokensReformatted = parseTokenArrayWithSpecialOperators(codeAsTokens);
-	let parsedTokens = parseTokensToNative(codeAsTokensReformatted);
-	let nativeLines = splitTokenArrayByTwoOrMoreNewLines(parsedTokens);
-	for(let i = 0; i<nativeLines.length; i++){
-		out.innerHTML += "$${" + formatMathBlock(nativeLines[i]) + "}$$";
-		print(formatMathBlock(nativeLines[i]));
-	}
-	
-	MathJax.Hub.Typeset();
-}
+
 
 
 

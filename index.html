@@ -1,3 +1,4 @@
+<!-- Scrath Web Version -->
 <html>
 <head>
 <meta charset = "UTF-8">
@@ -5,12 +6,6 @@
 <link rel="stylesheet" href="codemirror/lib/codemirror.css">
 <link rel="stylesheet" href="codemirror/theme/neo.css">
 <script src="codemirror/mode/scrath/scrath.js"></script>
-<script id = "MathJaxScript" src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-<script>
-MathJax.Hub.Config({
-	jax: ["input/TeX", "output/HTML-CSS"]
-});
-</script>
 <script src = "html2canvas.js"></script>
 <script src = "jquery.js"></script>
 <script src = "utils.js"></script>
@@ -98,7 +93,7 @@ MathJax.Hub.Config({
 	<div class = "NavigationButton" onclick = "gotoLink('https://scrathlang.github.io/')"><a style = "color: pink" href = "#">Scrath</a></div>
 	<div class = "NavigationButton" onclick = "gotoLink('https://github.com/scrathlang/scrathlang.github.io')"><a href = "#">Source Code</a></div>
 	<div class = "NavigationButton" onclick = "gotoLink('documentation.html')"><a href = "#">Tutorial and Documentation</a></div>
-	<div class = "NavigationButton" onclick = "gotoLink('https://drive.google.com/file/d/1s8K-mp5bugEN61GrKXfMEBLVhh70PE_y/view?usp=sharing')"><a href = "#">Download</a></div>
+	<div class = "NavigationButton" onclick = "gotoLink('https://drive.google.com/file/d/1wAVafpJqSbrYkmgoy3Jy1jaMswZ_eXjq/view?usp=sharing')"><a href = "#">Download</a></div>
 </nav>
 <div id = "ButtonWrapper">
 	<button onclick = "go()" id = "Compile">Compile</button>
@@ -117,6 +112,40 @@ var codeArea = CodeMirror(document.getElementById("InputWrapper"), {
 	theme: "neo"
 });
 codeArea.setSize(400, 685);
+
+var hasMathJax = false;																														" Dave made this "
+	
+function runMathJax(){
+	let mathJaxScript = createElement("script");
+	mathJaxScript.setAttribute("id", "MathJaxScript");
+	mathJaxScript.src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML";
+	mathJaxScript.type = "text/javascript";
+	document.head.appendChild(mathJaxScript);
+	hasMathJax = true;}
+	
+function go(){
+	//stopMathJax();
+	let out = get("Output");
+	out.innerHTML = "";
+	let code = codeArea.getValue();
+	let codeAsTokens = splitCodeIntoTokens(code, Operators);
+	rememberFunctionNames(codeAsTokens);
+	let codeAsTokensReformatted = parseTokenArrayWithSpecialOperators(codeAsTokens);
+	//Functions = {};
+	//out.innerHTML += "Code as tokens reformatted: " + mathArrayToString(codeAsTokensReformatted);
+	let parsedTokens = parseTokensToNative(codeAsTokensReformatted);
+	//out.innerHTML += "<br><br>Parsed tokens (to native): " + mathArrayToString(parsedTokens);
+	let nativeLines = splitTokenArrayByTwoOrMoreNewLines(parsedTokens);
+	for(let i = 0; i<nativeLines.length; i++){
+		//print(mathArrayToString(nativeLines[i]));
+		out.innerHTML += "$${" + formatMathBlock(nativeLines[i]) + "}$$<br>";
+		print(formatMathBlock(nativeLines[i]));
+		//print(formatMathBlock(nativeLines[i]));
+	}
+	if(hasMathJax) MathJax.Hub.Typeset();
+	else runMathJax();
+}
+
 </script>
 </body>
 </html>
