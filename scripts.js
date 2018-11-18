@@ -3,8 +3,8 @@ debug = false;
 
 
 
-var Operators = [',,', '|', ';;', '===', '<=>', '<->', "//", "->", "<-", "==", "++", "^", "=", ",",
-				 "/", "+", "-", ";", "(", ")", "\n", "[",
+var Operators = ['[*', '*]', ',,', '||', '|', ';;', '===', '<=>', '<->', "//", "->", "<-", "=>", "==", "++", "^", "=", ",",
+				 "/", "+", "-", ";", "(", ")", "\n", "[", '\\',
 				 "]", "{", "}", "#"];
 function splitCodeIntoTokens(code, operators){
 		var codeParts = splitBySpacesAndTabs(code);
@@ -111,8 +111,17 @@ NativeMacros = {
 	'sum'		: '\\sum',	'Sum' : '\\Large{\\sum}\\normalsize',
 	'prod'		: '\\prod', 'Product' : '\\prod',
 	'integral'	: '\\int',
+	'dif'		: '\\setminus',
+	'\\'		: '\\setminus',
+	'R'			: '\\R',
+	'N'			: '\\N',
+	'Z'			: '\\Z',
+	'Q'			: '\\Q',
 	';;'		: ' \\ \\ ',
 	'|'			: ')',
+	'||'		: '|',
+	'[*'		: '\\{',
+	'*]'		: '\\}',
 	',,'		: ','
 
 }
@@ -344,6 +353,7 @@ function splitTokenArrayByTwoOrMoreNewLines(tokenArray){	// Splits by 2 or more 
 NativeFunctions = {};
 const FUNCTION  = 1;
 const ROWS		= 2;	// Special type of native function, creates rows
+const MATRIX	= 3;	// Special type, creates a matrix
 function NativeFunction(name, type, fopen, fbetween, fclose){
 	NativeFunctions[name] = this;
 	this.name = name;
@@ -359,6 +369,7 @@ function NativeFunction(name, type, fopen, fbetween, fclose){
 new NativeFunction("\\frac", FUNCTION, "{", "", "}");
 new NativeFunction("\\sqrt", FUNCTION, "{", "", "}");
 new NativeFunction("rows", ROWS);
+new NativeFunction("matrix", MATRIX);	// matrix(nrows, ncols, p1, p2, p3, p4, ...)
 
 function isNativeFunction(string){
 	for (var key in NativeFunctions) {
@@ -367,6 +378,7 @@ function isNativeFunction(string){
 	return false;}
 
 function callNativeFunction(nf, pars){
+	console.log("Calling " + nf.name);
 	let ret = "";
 	if(nf.type == FUNCTION){
 		ret = nf.name;
@@ -378,7 +390,26 @@ function callNativeFunction(nf, pars){
 			ret += formatMathBlock(pars[i]) + " ";
 			if(i != pars.length - 1){
 				ret += " \\\\ ";}}
-		ret += "\\end{matrix} ";
+		ret += "\\end{matrix} ";}
+	else if(nf.type == MATRIX){
+		console.log("  It's a MATRIX");
+		ret = "\\begin{pmatrix}";
+		let nrows = pars[0];
+		let ncols = pars[1];
+		let actualParameters = pars.slice(2, pars.length);
+		let i = 0;
+		for(let ro = 1; ro <= nrows; ro++){
+			for(let co = 1; co <= ncols; co++){
+				ret += actualParameters[i];
+				if(co != ncols){
+					ret += " & ";}
+				i++;}
+			if(ro != nrows){
+				ret += " \\\\ ";
+			}
+		}
+		ret += "\\end{pmatrix}";
+		console.log("  Finished ret as: " + ret);
 	}
 	return ret;}
 
@@ -407,7 +438,7 @@ function formatMathBlock(tokenArray){
 			i = end;}
 		else if(!wordIsEscaped && isNativeMacro(token)){
 			ret += NativeMacros[token] + " ";}
-		else if(!wordIsEscaped && isTokenNumber(token) || isTokenOperator(token) || token[0] == "\\" || token == "}^{"){
+		else if(!wordIsEscaped && isTokenNumber(token) || isTokenOperator(token) || token[0] == "\\" || token == "}^{" || token == '}_{'){
 			ret += token + " ";}
 		else if((i>0 && tokenArray[i-1][0] != '~' && isNativeMacro(tokenArray[i-1])) || isTokenNumber(tokenArray[i-1]) || isTokenOperator(tokenArray[i-1]) || tokenArray[i-1] == "}^{"){
 			ret += token + " ";}
