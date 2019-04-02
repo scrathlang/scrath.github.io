@@ -122,7 +122,8 @@ NativeMacros = {
 	'||'		: '|',
 	'[*'		: '\\{',
 	'*]'		: '\\}',
-	',,'		: ','
+	',,'		: ',',
+	'Ana'		: '\includegraphics[scale=0.5]{ANA_CEA_DRAGUTA}'
 
 }
 function isNativeMacro(string){
